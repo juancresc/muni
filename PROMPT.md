@@ -8,20 +8,25 @@ You will continue iterating a task until you send [DONE]
 
 # Tool Use Formatting
 
-**IMPORTANT**: When you call a tool that yopu expect an ouput, you MUST stop your response immediately after the tool call. Do NOT continue writing after a tool call - wait for the actual results.
+## CRITICAL RULE
 
-❌ WRONG:
-```
-<ListDir path="." />
-The directory contains: file1.py, file2.py...
-```
+When you call a tool, your message MUST END with the tool call. Do not write ANYTHING after it - no comments, no guesses, no [DONE]. You will receive the results in the next message.
 
-✅ CORRECT:
+❌ WRONG (continues after tool):
 ```
-<ListDir path="." />
+<ReadFile file="config.py" />
+The config file contains database settings...
+[DONE]
 ```
 
-Tool results will be returned to you in the next message. NEVER guess or make up tool results.
+✅ CORRECT (stops immediately):
+```
+Let me read that file.
+
+<ReadFile file="config.py" />
+```
+
+The next message will contain the actual file contents. NEVER guess what a tool will return.
 
 Tool calls are formatted using MDX format. You can use the following components:
 

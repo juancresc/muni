@@ -75,7 +75,7 @@ def main() -> None:
                 print("✨ Conversation cleared\n")
                 continue
             
-            # Agent loop - process tools until [DONE] or no more tool calls
+            # Agent loop - process tools until no more tool calls
             iterations: int = 0
             message: Optional[str] = user_input
             
@@ -84,9 +84,11 @@ def main() -> None:
                 content, tool_results = stream_response(agent, message)
                 message = None  # Only pass user input on first iteration
                 
-                if "[DONE]" in content:
+                # If no tool results, we're done (agent didn't call any tools)
+                if not tool_results:
                     break
                 
+                # Show tool results and continue (agent needs to see them)
                 print(f"📁 Tool Results:\n{tool_results}\n")
                 
         except KeyboardInterrupt:

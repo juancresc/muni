@@ -96,7 +96,7 @@ class Agent:
                 log_entry["model"] = self.model
             
             # Append to log file
-            log_file = logs_dir / f"{self.session_id}.jsonl"
+            log_file = logs_dir / f"{self.session_id}.json"
             with open(log_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
                 
@@ -118,9 +118,12 @@ class Agent:
         self._log_message(m)
         return m
 
-    def _add_system_message(self, content):
-        """Add a system message to the conversation (e.g., tool results)."""
-        m = {"content": content, "role": "system"}
+    def _add_tool_result(self, content):
+        """Add tool results to the conversation."""
+        # Anthropic concatenates all system messages into initial prompt,
+        # so tool results must be user messages for them to appear mid-conversation
+        role = "user" if self.provider == "anthropic" else "system"
+        m = {"content": content, "role": role}
         self.messages.append(m)
         self._log_message(m)
         return m
@@ -228,7 +231,7 @@ class Agent:
             # Process tools and add results if any
             tool_results = self._process_tools(content)
             if tool_results:
-                new_messages.append(self._add_system_message(f"[Tool Results]\n{tool_results}"))
+                new_messages.append(self._add_tool_result(f"[Tool Results]\n{tool_results}"))
         
         return new_messages
 
@@ -256,6 +259,6 @@ class Agent:
             # Process tools and add results if any
             tool_results = self._process_tools(content)
             if tool_results:
-                self._add_system_message(f"[Tool Results]\n{tool_results}")
+                self._add_tool_result(f"[Tool Results]\n{tool_results}")
                 return tool_results
         return None
