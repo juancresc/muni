@@ -1,15 +1,29 @@
 import re
-from typing import Dict, Optional, Tuple
-from pathlib import Path
+from typing import Optional, Tuple
+
+from . import BaseTool
 
 
-class ReadFileTool:
-
-    ATTRS_RE = re.compile(r'(\w+)="([^"]*)"')
-    READFILE_RE = re.compile(r"<ReadFile\b([^>]*)/>", re.IGNORECASE)
+class ReadFileTool(BaseTool):
+    """
+    Reads file contents from the project.
     
-    def __init__(self, base_dir: Path):
-        self.base_dir = base_dir
+    ## ReadFile
+    
+    Reads file contents from the project.
+    
+    **Usage:**
+    
+    ```
+    <ReadFile file="app/page.tsx" />
+    <ReadFile path="components/header.tsx" />
+    ```
+    
+    **Attributes:**
+    - file or path: Path to the file to read (relative to project root)
+    """
+
+    READFILE_RE = re.compile(r"<ReadFile\b([^>]*)/>", re.IGNORECASE)
 
     def process(self, mdx: str) -> Optional[Tuple[str, str]]:
         """Process ReadFile tags. Returns (full_results, summary) or None."""
@@ -32,13 +46,6 @@ class ReadFileTool:
             return "\n\n".join(parts), "\n".join(summaries)
         return None
 
-    def _parse_attrs(self, attrs_str: str) -> Dict[str, str]:
-        """Parse attributes string into a dictionary."""
-        attrs = {}
-        for match in self.ATTRS_RE.finditer(attrs_str):
-            attrs[match.group(1)] = match.group(2)
-        return attrs
-
     def _read_file(self, file_path: str) -> Optional[str]:
         """Read and return the contents of a file."""
         target = self.base_dir / file_path
@@ -47,4 +54,3 @@ class ReadFileTool:
         if not target.is_file():
             return None
         return target.read_text(encoding="utf-8")
-

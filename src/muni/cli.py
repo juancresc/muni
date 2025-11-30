@@ -2,6 +2,7 @@
 """Command-line interface for Agent4."""
 
 import os
+import platform
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -33,7 +34,12 @@ def load_prompt(current_path: str) -> str:
     """Load system prompt from PROMPT.md and substitute variables."""
     prompt_path = get_prompt_path()
     content = prompt_path.read_text(encoding="utf-8")
-    return content.replace("{{ current_path }}", current_path)
+    
+    os_info = f"{platform.system()} {platform.release()}"
+    
+    content = content.replace("{{ current_path }}", current_path)
+    content = content.replace("{{ os }}", os_info)
+    return content
 
 
 def stream_response(agent: Agent, user_input: Optional[str] = None) -> tuple[str, Optional[str]]:
@@ -70,7 +76,7 @@ def main() -> None:
     print("Type 'exit' to quit, 'clear' to reset conversation")
     print("=" * 50)
     
-    current_path: Path = Path(os.getcwd())
+    current_path: Path = Path.cwd()
     system_prompt: str = load_prompt(str(current_path))
     agent: Agent = Agent(session_id=session_id, model=model, system_prompt=system_prompt, base_dir=current_path)
     print("✅ Agent initialized\n")

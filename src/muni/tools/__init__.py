@@ -1,8 +1,34 @@
+import importlib
+import inspect
+import re
+from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 
-from .read_file import ReadFileTool
-from .list_dir import ListDirTool
+
+class BaseTool(ABC):
+    """Base class for all tools."""
+    
+    ATTRS_RE = re.compile(r'(\w+)="([^"]*)"')
+    
+    def __init__(self, base_dir: Path):
+        self.base_dir = base_dir
+    
+    @abstractmethod
+    def process(self, mdx: str) -> Optional[Tuple[str, str]]:
+        """
+        Process MDX content and execute the tool if matching tags are found.
+        
+        Returns (full_results, summary) or None if no matching tags.
+        """
+        pass
+    
+    def _parse_attrs(self, attrs_str: str) -> Dict[str, str]:
+        """Parse attributes string into a dictionary."""
+        attrs = {}
+        for match in self.ATTRS_RE.finditer(attrs_str):
+            attrs[match.group(1)] = match.group(2)
+        return attrs
 
 
 class ToolsManager:
@@ -10,10 +36,23 @@ class ToolsManager:
     
     def __init__(self, base_dir: Path):
         self.base_dir = base_dir
-        self._tools = [
-            ReadFileTool(base_dir),
-            ListDirTool(base_dir),
-        ]
+        self._tools: List[BaseTool] = []
+        self._discover_tools()
+    
+    def _discover_tools(self) -> None:
+        """Dynamically discover and register all tools in the tools directory."""
+        tools_dir = Path(__file__).parent
+        
+        for file in tools_dir.glob("*.py"):
+            if file.name.startswith("_"):
+                continue
+            
+            module_name = f".{file.stem}"
+            module = importlib.import_module(module_name, package=__package__)
+            
+            for name, obj in inspect.getmembers(module, inspect.isclass):
+                if issubclass(obj, BaseTool) and obj is not BaseTool:
+                    self._tools.append(obj(self.base_dir))
     
     def process(self, mdx: str) -> Optional[Tuple[str, str]]:
         """
@@ -36,5 +75,4 @@ class ToolsManager:
         return None
 
 
-__all__ = ["ToolsManager", "ReadFileTool", "ListDirTool"]
-
+__all__ = ["BaseTool", "ToolsManager"]

@@ -25,6 +25,7 @@ class Agent:
 
     def __init__(self, session_id: str, model: str = GPT_4O, system_prompt: str = "", base_dir: Path = None):
         self.session_id = session_id
+        self.session_start = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         self.provider, self.model_name = self._parse_model(model)
         self.model = model  # Keep full model string for logging
         self.system_prompt = system_prompt
@@ -97,7 +98,7 @@ class Agent:
                 log_entry["model"] = self.model
             
             # Append to log file
-            log_file = logs_dir / f"{self.session_id}.json"
+            log_file = logs_dir / f"{self.session_start}_{self.session_id}.json"
             with open(log_file, "a", encoding="utf-8") as f:
                 f.write(json.dumps(log_entry, ensure_ascii=False) + "\n")
                 

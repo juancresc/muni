@@ -52,6 +52,18 @@ Lists contents of a directory.
 <ListDir path="src" />
 ```
 
+## RunCommand
+
+Runs a shell command and returns the output.
+
+**Usage:**
+
+```
+<RunCommand command="ls -la" />
+<RunCommand command="git status" />
+<RunCommand command="npm test" />
+```
+
 ====
 
 # Workflow

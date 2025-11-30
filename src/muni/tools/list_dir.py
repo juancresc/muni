@@ -1,15 +1,29 @@
 import re
-from typing import Dict, Optional, List, Tuple
-from pathlib import Path
+from typing import Optional, List, Tuple
+
+from . import BaseTool
 
 
-class ListDirTool:
-
-    ATTRS_RE = re.compile(r'(\w+)="([^"]*)"')
-    LISTDIR_RE = re.compile(r"<ListDir\b([^>]*)/>", re.IGNORECASE)
+class ListDirTool(BaseTool):
+    """
+    Lists contents of a directory.
     
-    def __init__(self, base_dir: Path):
-        self.base_dir = base_dir
+    ## ListDir
+    
+    Lists contents of a directory.
+    
+    **Usage:**
+    
+    ```
+    <ListDir path="." />
+    <ListDir path="src/components" />
+    ```
+    
+    **Attributes:**
+    - path: Directory path to list (relative to project root, defaults to ".")
+    """
+
+    LISTDIR_RE = re.compile(r"<ListDir\b([^>]*)/>", re.IGNORECASE)
 
     def process(self, mdx: str) -> Optional[Tuple[str, str]]:
         """Process ListDir tags. Returns (full_results, summary) or None."""
@@ -31,13 +45,6 @@ class ListDirTool:
             return "\n\n".join(parts), "\n".join(summaries)
         return None
 
-    def _parse_attrs(self, attrs_str: str) -> Dict[str, str]:
-        """Parse attributes string into a dictionary."""
-        attrs: Dict[str, str] = {}
-        for match in self.ATTRS_RE.finditer(attrs_str):
-            attrs[match.group(1)] = match.group(2)
-        return attrs
-
     def _list_dir(self, dir_path: str) -> Tuple[Optional[str], int]:
         """List contents of a directory. Returns (content, count)."""
         target = self.base_dir / dir_path
@@ -55,4 +62,3 @@ class ListDirTool:
         
         content = "\n".join(entries) if entries else "(empty)"
         return content, len(entries)
-
