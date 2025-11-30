@@ -105,7 +105,7 @@ def main() -> None:
             iterations: int = 0
             message: Optional[str] = user_input
             
-            while iterations < 50:
+            while iterations < 500:
                 iterations += 1
                 content, tool_results = stream_response(agent, message)
                 message = None  # Only pass user input on first iteration

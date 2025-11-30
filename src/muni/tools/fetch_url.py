@@ -45,9 +45,9 @@ class FetchUrlTool(BaseTool):
             
             result = self._fetch_url(url)
             if result:
-                title, content = result
-                parts.append(f"=== URL: {url} ===\nTitle: {title}\n\n{content}")
-                summaries.append(f"🌐 FETCHED {url}")
+                status_code, title, content = result
+                parts.append(f"=== URL: {url} ===\nStatus: {status_code}\nTitle: {title}\n\n{content}")
+                summaries.append(f"🌐 FETCHED {url} [{status_code}]")
             else:
                 parts.append(f"=== URL: {url} ===\n(Failed to fetch)")
                 summaries.append(f"❌ {url} (failed)")
@@ -56,13 +56,14 @@ class FetchUrlTool(BaseTool):
             return "\n\n".join(parts), "\n".join(summaries)
         return None
 
-    def _fetch_url(self, url: str) -> Optional[Tuple[str, str]]:
-        """Fetch URL and return (title, content) or None on failure."""
+    def _fetch_url(self, url: str) -> Optional[Tuple[int, str, str]]:
+        """Fetch URL and return (status_code, title, content) or None on failure."""
         try:
             headers = {
                 "User-Agent": "Mozilla/5.0 (compatible; MuniBot/1.0)"
             }
             response = requests.get(url, headers=headers, timeout=self.TIMEOUT)
+            status_code = response.status_code
             response.raise_for_status()
             
             soup = BeautifulSoup(response.text, "html.parser")
@@ -85,10 +86,10 @@ class FetchUrlTool(BaseTool):
             if len(content) > 10000:
                 content = content[:10000] + "\n\n... (truncated)"
             
-            return title, content
+            return status_code, title, content
             
-        except requests.RequestException as e:
+        except requests.RequestException:
             return None
-        except Exception as e:
+        except Exception:
             return None
 
