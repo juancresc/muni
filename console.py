@@ -28,15 +28,15 @@ def stream_response(agent: Agent, user_input: Optional[str] = None) -> tuple[str
     tool_results: Optional[str] = None
     
     gen = agent.stream(user_input)
-    for chunk in gen:
-        print(chunk, end="", flush=True)
-        full_content.append(chunk)
-    
-    # Get tool results from generator return value
-    try:
-        gen.send(None)
-    except StopIteration as e:
-        tool_results = e.value
+    # Manually iterate to capture the return value
+    while True:
+        try:
+            chunk = next(gen)
+            print(chunk, end="", flush=True)
+            full_content.append(chunk)
+        except StopIteration as e:
+            tool_results = e.value
+            break
     
     print("\n")
     return "".join(full_content), tool_results
@@ -76,15 +76,18 @@ def main() -> None:
                 continue
             
             # Agent loop - process tools until [DONE] or no more tool calls
-            content, tool_results = stream_response(agent, user_input)
+            iterations: int = 0
+            message: Optional[str] = user_input
             
-            max_iterations: int = 20
-            for _ in range(max_iterations):
+            while iterations < 50:
+                iterations += 1
+                content, tool_results = stream_response(agent, message)
+                message = None  # Only pass user input on first iteration
+                
                 if "[DONE]" in content or not tool_results:
                     break
                 
                 print(f"📁 Tool Results:\n{tool_results}\n")
-                content, tool_results = stream_response(agent)
                 
         except KeyboardInterrupt:
             print("\n\n👋 Goodbye!")
