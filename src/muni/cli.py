@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Command-line interface for Agent4."""
+
 import os
 import uuid
 from pathlib import Path
@@ -6,17 +8,30 @@ from typing import Optional
 
 from dotenv import load_dotenv
 
-from llm import Agent, CLAUDE_SONNET
+from .agent import Agent, CLAUDE_SONNET
 
 # Load environment variables
 load_dotenv()
 
-BASE_DIR: Path = Path(__file__).parent
+
+def get_prompt_path() -> Path:
+    """Get the path to PROMPT.md, checking multiple locations."""
+    # Check current directory first
+    local_prompt = Path.cwd() / "PROMPT.md"
+    if local_prompt.exists():
+        return local_prompt
+    
+    # Check package directory
+    package_prompt = Path(__file__).parent / "PROMPT.md"
+    if package_prompt.exists():
+        return package_prompt
+    
+    raise FileNotFoundError("PROMPT.md not found")
 
 
 def load_prompt(current_path: str) -> str:
     """Load system prompt from PROMPT.md and substitute variables."""
-    prompt_path = BASE_DIR / "PROMPT.md"
+    prompt_path = get_prompt_path()
     content = prompt_path.read_text(encoding="utf-8")
     return content.replace("{{ current_path }}", current_path)
 
@@ -43,11 +58,12 @@ def stream_response(agent: Agent, user_input: Optional[str] = None) -> tuple[str
 
 
 def main() -> None:
+    """Main entry point for the CLI."""
     session_id: str = os.environ.get("SESSION_ID", str(uuid.uuid4()))
     model: str = os.environ.get("MODEL", CLAUDE_SONNET)
     
     print("=" * 50)
-    print("Agent Console")
+    print("Agent4 Console")
     print("=" * 50)
     print(f"Model: {model}")
     print(f"Session: {session_id}")
@@ -101,3 +117,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

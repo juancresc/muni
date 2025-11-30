@@ -71,3 +71,4 @@ Lists contents of a directory.
 - Use tools when you need to explore or modify the project
 - Include `[DONE]` at the end of your response when the task is fully complete
 - If you need more information or the user needs to take action, don't include `[DONE]`
+

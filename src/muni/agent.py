@@ -4,7 +4,8 @@ from pathlib import Path
 from datetime import datetime
 import anthropic
 from openai import OpenAI
-from tools import ToolsManager
+
+from .tools import ToolsManager
 
 # Model constants (format: provider/model-name)
 GPT_4O = "openai/gpt-4o"
@@ -128,12 +129,9 @@ class Agent:
         self._log_message(m)
         return m
 
-    def _process_tools(self, content: str) -> Optional[str]:
-        """Process tool calls in content. Returns formatted results or None."""
-        results = self.tools.process(content)
-        if results:
-            return self.tools.format_results(results)
-        return None
+    def _process_tools(self, content: str) -> Optional[tuple[str, str]]:
+        """Process tool calls in content. Returns (full_results, summary) or None."""
+        return self.tools.process(content)
 
     def _handle_openai(self, stream: bool = False):
         """Handle OpenAI API call."""
@@ -229,9 +227,10 @@ class Agent:
         if content:
             new_messages.append(self._add_assistant_message(content))
             # Process tools and add results if any
-            tool_results = self._process_tools(content)
-            if tool_results:
-                new_messages.append(self._add_tool_result(f"[Tool Results]\n{tool_results}"))
+            tool_result = self._process_tools(content)
+            if tool_result:
+                full_results, _ = tool_result
+                new_messages.append(self._add_tool_result(f"[Tool Results]\n{full_results}"))
         
         return new_messages
 
@@ -257,8 +256,10 @@ class Agent:
         if content:
             self._add_assistant_message(content)
             # Process tools and add results if any
-            tool_results = self._process_tools(content)
-            if tool_results:
-                self._add_tool_result(f"[Tool Results]\n{tool_results}")
-                return tool_results
+            tool_result = self._process_tools(content)
+            if tool_result:
+                full_results, summary = tool_result
+                self._add_tool_result(f"[Tool Results]\n{full_results}")
+                return summary  # Return summary for console display
         return None
+

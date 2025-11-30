@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Tuple
 
 from .read_file import ReadFileTool
 from .list_dir import ListDirTool
@@ -15,22 +15,26 @@ class ToolsManager:
             ListDirTool(base_dir),
         ]
     
-    def process(self, mdx: str) -> List[str]:
+    def process(self, mdx: str) -> Optional[Tuple[str, str]]:
         """
         Process MDX content and execute all matching tools.
         
-        Returns a list of formatted result strings.
+        Returns (full_results, summary) or None if no tools matched.
         """
-        results = []
+        full_parts: List[str] = []
+        summary_parts: List[str] = []
+        
         for tool in self._tools:
             result = tool.process(mdx)
             if result:
-                results.append(result)
-        return results
-    
-    def format_results(self, results: List[str]) -> str:
-        """Join all tool results into a single string."""
-        return "\n\n".join(results)
+                full, summary = result
+                full_parts.append(full)
+                summary_parts.append(summary)
+        
+        if full_parts:
+            return "\n\n".join(full_parts), "\n".join(summary_parts)
+        return None
 
 
 __all__ = ["ToolsManager", "ReadFileTool", "ListDirTool"]
+
