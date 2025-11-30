@@ -24,7 +24,6 @@ PYTHONPATH=src python -m muni.cli
 
 - `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` - API key for your provider
 - `MODEL` - Model to use (default: `anthropic/claude-sonnet-4-20250514`)
-- `SESSION_ID` - Optional session identifier for logs
 
 ## Features
 

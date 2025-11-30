@@ -59,7 +59,7 @@ def stream_response(agent: Agent, user_input: Optional[str] = None) -> tuple[str
 
 def main() -> None:
     """Main entry point for the CLI."""
-    session_id: str = os.environ.get("SESSION_ID", str(uuid.uuid4()))
+    session_id: str = str(uuid.uuid4())
     model: str = os.environ.get("MODEL", CLAUDE_SONNET)
     
     print("=" * 50)
