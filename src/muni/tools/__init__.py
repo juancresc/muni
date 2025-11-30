@@ -54,6 +54,14 @@ class ToolsManager:
                 if issubclass(obj, BaseTool) and obj is not BaseTool:
                     self._tools.append(obj(self.base_dir))
     
+    def get_tools_documentation(self) -> str:
+        """Get documentation for all registered tools from their docstrings."""
+        docs: List[str] = []
+        for tool in self._tools:
+            if tool.__doc__:
+                docs.append(tool.__doc__.strip())
+        return "\n\n".join(docs)
+    
     def process(self, mdx: str) -> Optional[Tuple[str, str]]:
         """
         Process MDX content and execute all matching tools.

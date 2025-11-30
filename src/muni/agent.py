@@ -23,7 +23,7 @@ CLAUDE_3_5_HAIKU = "anthropic/claude-3-5-haiku-20241022"
 
 class Agent:
 
-    def __init__(self, session_id: str, model: str = GPT_4O, system_prompt: str = "", base_dir: Path = None):
+    def __init__(self, session_id: str, model: str = GPT_4O, system_prompt: str = "", tools: ToolsManager = None):
         self.session_id = session_id
         self.session_start = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
         self.provider, self.model_name = self._parse_model(model)
@@ -31,7 +31,7 @@ class Agent:
         self.system_prompt = system_prompt
         self.client = self._create_client()
         self.messages = [{"role": "system", "content": system_prompt}]
-        self.tools = ToolsManager(base_dir or Path.cwd())
+        self.tools = tools or ToolsManager(Path.cwd())
         # Log the initial system message
         self._log_message(self.messages[0])
 

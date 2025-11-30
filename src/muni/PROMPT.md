@@ -30,39 +30,7 @@ The next message will contain the actual file contents. NEVER guess what a tool 
 
 Tool calls are formatted using MDX format. You can use the following components:
 
-## ReadFile
-
-Reads file contents from the project.
-
-**Usage:**
-
-```
-<ReadFile file="app/page.tsx" />
-<ReadFile path="components/header.tsx" />
-```
-
-## ListDir
-
-Lists contents of a directory.
-
-**Usage:**
-
-```
-<ListDir path="." />
-<ListDir path="src" />
-```
-
-## RunCommand
-
-Runs a shell command and returns the output.
-
-**Usage:**
-
-```
-<RunCommand command="ls -la" />
-<RunCommand command="git status" />
-<RunCommand command="npm test" />
-```
+{{ tools }}
 
 ====
 

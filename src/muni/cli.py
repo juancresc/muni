@@ -10,6 +10,7 @@ from typing import Optional
 from dotenv import load_dotenv
 
 from .agent import Agent, CLAUDE_SONNET
+from .tools import ToolsManager
 
 # Load environment variables
 load_dotenv()
@@ -30,15 +31,17 @@ def get_prompt_path() -> Path:
     raise FileNotFoundError("PROMPT.md not found")
 
 
-def load_prompt(current_path: str) -> str:
+def load_prompt(current_path: str, tools: ToolsManager) -> str:
     """Load system prompt from PROMPT.md and substitute variables."""
     prompt_path = get_prompt_path()
     content = prompt_path.read_text(encoding="utf-8")
     
     os_info = f"{platform.system()} {platform.release()}"
+    tools_docs = tools.get_tools_documentation()
     
     content = content.replace("{{ current_path }}", current_path)
     content = content.replace("{{ os }}", os_info)
+    content = content.replace("{{ tools }}", tools_docs)
     return content
 
 
@@ -77,8 +80,9 @@ def main() -> None:
     print("=" * 50)
     
     current_path: Path = Path.cwd()
-    system_prompt: str = load_prompt(str(current_path))
-    agent: Agent = Agent(session_id=session_id, model=model, system_prompt=system_prompt, base_dir=current_path)
+    tools: ToolsManager = ToolsManager(current_path)
+    system_prompt: str = load_prompt(str(current_path), tools)
+    agent: Agent = Agent(session_id=session_id, model=model, system_prompt=system_prompt, tools=tools)
     print("✅ Agent initialized\n")
     
     while True:
@@ -93,7 +97,7 @@ def main() -> None:
                 break
             
             if user_input.lower() == "clear":
-                agent = Agent(session_id=session_id, model=model, system_prompt=system_prompt, base_dir=current_path)
+                agent = Agent(session_id=session_id, model=model, system_prompt=system_prompt, tools=tools)
                 print("✨ Conversation cleared\n")
                 continue
             
