@@ -17,9 +17,8 @@ class ListDirTool:
         for match in self.LISTDIR_RE.finditer(mdx):
             attrs = self._parse_attrs(match.group(1))
             dir_path = attrs.get("path") or "."
-            recursive = attrs.get("recursive", "").lower() == "true"
             
-            content = self._list_dir(dir_path, recursive)
+            content = self._list_dir(dir_path)
             if content is not None:
                 parts.append(f"=== Directory: {dir_path} ===\n{content}")
             else:
@@ -33,7 +32,7 @@ class ListDirTool:
             attrs[match.group(1)] = match.group(2)
         return attrs
 
-    def _list_dir(self, dir_path: str, recursive: bool = False) -> Optional[str]:
+    def _list_dir(self, dir_path: str) -> Optional[str]:
         """List contents of a directory."""
         target = self.base_dir / dir_path
         if not target.exists():
@@ -43,22 +42,13 @@ class ListDirTool:
             print(f"[LISTDIR] {target} (not a directory)")
             return None
         
-        print(f"[LISTDIR] {target} (recursive={recursive})")
+        print(f"[LISTDIR] {target}")
         
         entries: List[str] = []
-        if recursive:
-            for item in sorted(target.rglob("*")):
-                rel_path = item.relative_to(target)
-                if item.is_dir():
-                    entries.append(f"{rel_path}/")
-                else:
-                    entries.append(str(rel_path))
-        else:
-            for item in sorted(target.iterdir()):
-                if item.is_dir():
-                    entries.append(f"{item.name}/")
-                else:
-                    entries.append(item.name)
+        for item in sorted(target.iterdir()):
+            if item.is_dir():
+                entries.append(f"{item.name}/")
+            else:
+                entries.append(item.name)
         
         return "\n".join(entries) if entries else "(empty)"
-

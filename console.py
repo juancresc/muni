@@ -84,7 +84,7 @@ def main() -> None:
                 content, tool_results = stream_response(agent, message)
                 message = None  # Only pass user input on first iteration
                 
-                if "[DONE]" in content or not tool_results:
+                if "[DONE]" in content:
                     break
                 
                 print(f"📁 Tool Results:\n{tool_results}\n")
